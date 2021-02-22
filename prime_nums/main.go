@@ -9,7 +9,11 @@ import (
 func main() {
 	var num_str string
 	fmt.Print("Input number: ")
-	fmt.Scanln(&num_str)
+	_, err := fmt.Scanln(&num_str)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	num, err := strconv.ParseUint(num_str, 10, 16)
 	if err != nil {
 		fmt.Println("Not a number error", err)

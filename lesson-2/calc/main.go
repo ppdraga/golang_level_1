@@ -10,13 +10,16 @@ func main() {
 	var a, b, op string
 
 	fmt.Print("Input first number: ")
-	fmt.Scanln(&a)
+	_, err := fmt.Scanln(&a)
+	checkError(err)
 
 	fmt.Print("Input second number: ")
-	fmt.Scanln(&b)
+	_, err = fmt.Scanln(&b)
+	checkError(err)
 
 	fmt.Print("Input operation: ")
-	fmt.Scanln(&op)
+	_, err = fmt.Scanln(&op)
+	checkError(err)
 
 	fa, err := strconv.ParseFloat(a, 64)
 	if err != nil {
@@ -50,4 +53,11 @@ func main() {
 	}
 
 	fmt.Println(fa, op, fb, "=", res)
+}
+
+func checkError(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
