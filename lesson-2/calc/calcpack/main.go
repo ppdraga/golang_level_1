@@ -1,3 +1,4 @@
+// Documentation string for package calcpack
 package calcpack
 
 import (
@@ -6,6 +7,7 @@ import (
 	"strconv"
 )
 
+// Documentation string for func Calc in package calcpack
 func Calc(a, b, op string) float64 {
 	fa, err := strconv.ParseFloat(a, 64)
 	if err != nil {
