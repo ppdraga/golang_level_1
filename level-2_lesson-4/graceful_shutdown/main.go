@@ -36,7 +36,7 @@ func main() {
 	select {
 	case <-termChan:
 		fmt.Println("graceful shutdown...")
-		<-time.NewTicker(3 * time.Second).C
+		<-time.NewTicker(1 * time.Second).C
 		cancelFunc()
 	}
 
