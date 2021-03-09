@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/ppdraga/golang_level_1/lesson-2/calc/calcpack"
+	"os"
 )
 
 func main() {
