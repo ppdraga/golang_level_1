@@ -10,32 +10,18 @@ func main() {
 	v := struct {
 		FieldString string `json:"field_string"`
 		FieldInt    int
-		StructField struct {
-			subField1 string
-			subField2 int
-		}
 	}{
 		FieldString: "stroka",
 		FieldInt:    107,
-		StructField: struct {
-			subField1 string
-			subField2 int
-		}{
-			subField1: "subField1value",
-			subField2: 123,
-		},
 	}
 	PrintStruct(v)
 	newValues := map[string]interface{}{
 		"FieldString": "stroka_updated",
 		"FieldInt":    777,
 		"unknown":     "unknoun",
-		"StructField": map[string]interface{}{
-			"subField1": "newSubFieldValue",
-			"subField2": 888,
-		},
 	}
 	UpdateStruct(&v, newValues)
+	fmt.Println("")
 	PrintStruct(v)
 }
 
@@ -70,26 +56,24 @@ func PrintStruct(in interface{}) {
 	}
 }
 
-func UpdateStruct(in interface{}, values map[string]interface{}) {
+func UpdateStruct(in interface{}, values map[string]interface{}) error {
 	if in == nil {
-		return
+		return fmt.Errorf("empty data, nothing to update")
 	}
 
 	inVal := reflect.ValueOf(in)
 	if inVal.Kind() == reflect.Ptr {
 		inVal = inVal.Elem()
 	} else {
-		return
+		return fmt.Errorf("in data should be a pointer to a struct")
 	}
 
 	if inVal.Kind() != reflect.Struct {
-		return
+		return fmt.Errorf("in data should be a pointer to a struct")
 	}
 
 	for fieldName, newValue := range values {
 		newValueReflect := reflect.ValueOf(newValue)
-		fieldValue := inVal.FieldByName(fieldName)
-		fmt.Println(fieldValue)
 		newValueReflectKind := newValueReflect.Kind()
 		if newValueReflectKind != reflect.Map {
 			fieldValue := inVal.FieldByName(fieldName)
@@ -99,4 +83,5 @@ func UpdateStruct(in interface{}, values map[string]interface{}) {
 
 		}
 	}
+	return nil
 }
