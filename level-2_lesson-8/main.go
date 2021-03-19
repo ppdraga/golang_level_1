@@ -64,13 +64,11 @@ var (
 	wg    sync.WaitGroup
 )
 
-func init() {
+func main() {
 	path = flag.String("path", ".", "Path where to search file duplicates")
 	force = flag.Bool("force", false, "Delete file duplicates")
 	flag.Parse()
-}
 
-func main() {
 	if *path == "." {
 		dir, err = os.Getwd()
 		if err != nil {
