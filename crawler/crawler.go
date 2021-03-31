@@ -19,6 +19,10 @@ type crawler struct {
 	maxDepth int
 }
 
+func (c *crawler) SetMaxDepth(maxDepth int) {
+	c.maxDepth = maxDepth
+}
+
 func newCrawler(maxDepth int) *crawler {
 	return &crawler{
 		visited:  make(map[string]string),

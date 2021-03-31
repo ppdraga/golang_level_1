@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -24,6 +25,9 @@ var (
 
 	// насколько глубоко нам надо смотреть (например, 10)
 	depthLimit int
+
+	// общий таймаут
+	defaultTimeout time.Duration = 1 * time.Second
 )
 
 // Как вы помните, функция инициализации стартует первой
@@ -42,13 +46,14 @@ func init() {
 }
 
 func main() {
+	fmt.Printf("defaultTimeout: %v", defaultTimeout)
 	started := time.Now()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	go watchSignals(cancel)
-	defer cancel()
-
 	crawler := newCrawler(depthLimit)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go watchSignals(cancel, crawler)
+	defer cancel()
 
 	// создаём канал для результатов
 	results := make(chan crawlResult)
@@ -67,18 +72,28 @@ func main() {
 }
 
 // ловим сигналы выключения
-func watchSignals(cancel context.CancelFunc) {
+func watchSignals(cancel context.CancelFunc, c *crawler) {
 	osSignalChan := make(chan os.Signal)
 
 	signal.Notify(osSignalChan,
 		syscall.SIGINT,
-		syscall.SIGTERM)
+		syscall.SIGTERM,
+		syscall.SIGUSR1)
 
-	sig := <-osSignalChan
-	log.Printf("got signal %q", sig.String())
+	for {
 
-	// если сигнал получен, отменяем контекст работы
-	cancel()
+		sig := <-osSignalChan
+		log.Printf("got signal %q", sig.String())
+
+		if sig.(syscall.Signal) == syscall.SIGUSR1 {
+			c.SetMaxDepth(10)
+			log.Println("MaxDepth = 10")
+			continue
+		}
+		// если сигнал получен, отменяем контекст работы
+		cancel()
+		break
+	}
 }
 
 func watchCrawler(ctx context.Context, results <-chan crawlResult, maxErrors, maxResults int) chan struct{} {

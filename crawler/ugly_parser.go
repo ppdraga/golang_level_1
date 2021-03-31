@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"golang.org/x/net/html"
 	"net/http"
+	"time"
 )
 
 // парсим страницу
 func parse(url string) (*html.Node, error) {
 	// что здесь должно быть вместо http.Get? :)
+	time.Sleep(defaultTimeout)
 	r, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("can't get page")
@@ -22,6 +24,7 @@ func parse(url string) (*html.Node, error) {
 
 // ищем заголовок на странице
 func pageTitle(n *html.Node) string {
+	time.Sleep(defaultTimeout)
 	var title string
 	if n.Type == html.ElementNode && n.Data == "title" {
 		return n.FirstChild.Data
@@ -37,6 +40,7 @@ func pageTitle(n *html.Node) string {
 
 // ищем все ссылки на страницы. Используем мапку чтобы избежать дубликатов
 func pageLinks(links map[string]struct{}, n *html.Node) map[string]struct{} {
+	//time.Sleep(defaultTimeout)
 	if links == nil {
 		links = make(map[string]struct{})
 	}
