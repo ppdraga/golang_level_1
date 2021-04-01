@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -62,9 +63,34 @@ var (
 	dir   string
 	err   error
 	wg    sync.WaitGroup
+	hlog  *log.Entry
 )
 
+func init() {
+	log.SetFormatter(&log.JSONFormatter{})
+	hostname, err := os.Hostname()
+	if err != nil {
+		panic(err)
+	}
+	standerdField := log.Fields{
+		"host": hostname,
+	}
+	hlog = log.WithFields(standerdField)
+	hlog.Info("Logger started!")
+}
+
 func main() {
+	//log.SetFormatter(&log.JSONFormatter{})
+	//hostname, err := os.Hostname()
+	//if err != nil {
+	//	panic(err)
+	//}
+	//standerdField := log.Fields{
+	//	"host": hostname,
+	//}
+	//hlog := log.WithFields(standerdField)
+	//hlog.Info("Logger started!")
+
 	path = flag.String("path", ".", "Path where to search file duplicates")
 	force = flag.Bool("force", false, "Delete file duplicates")
 	flag.Parse()
@@ -112,6 +138,7 @@ func main() {
 
 func exploreDir(path string, dups *Duplicates) {
 	defer wg.Done()
+	hlog.Infof("explore folder %s", path)
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		panic(err)
@@ -120,14 +147,20 @@ func exploreDir(path string, dups *Duplicates) {
 		fullPath := filepath.Join(path, f.Name())
 		if f.Mode().IsDir() {
 			wg.Add(1)
+			hlog.Infof("go down from folder %s to folder %s", path, fullPath)
 			go exploreDir(fullPath, dups)
 		} else {
 			hasher := sha256.New()
 			s, err := ioutil.ReadFile(filepath.Join(path, f.Name()))
 			if err != nil {
+				hlog.Errorf("Error %v occur while explore folder %s", err, path)
 				panic(err)
 			}
-			hasher.Write(s)
+			_, err = hasher.Write(s)
+			if err != nil {
+				hlog.Errorf("Error %v occur while explore folder %s", err, path)
+				panic(err)
+			}
 			sha := hex.EncodeToString(hasher.Sum(nil))
 			dups.Add(File{f.Name(), f.Size(), sha, fullPath, f.ModTime()})
 		}
