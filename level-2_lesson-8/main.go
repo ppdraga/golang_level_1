@@ -148,6 +148,7 @@ func exploreDir(path string, dups *Duplicates) {
 		if f.Mode().IsDir() {
 			wg.Add(1)
 			hlog.Infof("go down from folder %s to folder %s", path, fullPath)
+			panic("Something went wrong!")
 			go exploreDir(fullPath, dups)
 		} else {
 			hasher := sha256.New()
