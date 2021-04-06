@@ -20,7 +20,9 @@ type crawler struct {
 }
 
 func (c *crawler) SetMaxDepth(maxDepth int) {
+	c.Lock()
 	c.maxDepth = maxDepth
+	c.Unlock()
 }
 
 func newCrawler(maxDepth int) *crawler {
@@ -42,7 +44,10 @@ func (c *crawler) run(ctx context.Context, url string, results chan<- crawlResul
 
 	default:
 		// проверка глубины
-		if depth >= c.maxDepth {
+		c.Lock()
+		maxDepth := c.maxDepth
+		c.Unlock()
+		if depth >= maxDepth {
 			return
 		}
 
