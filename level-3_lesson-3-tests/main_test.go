@@ -74,5 +74,6 @@ func TestTodoer(t *testing.T) {
 	expected := "[item1 item2 item3]\n[item1 item2 item3 item4]\nitem1\nitem2\nitem3\nitem4\nunknown command\n"
 
 	assert.Equal(t, expected, output)
-
+	assert.Equal(t, []string{"item1", "item2", "item3", "item4"}, db.List())
+	assert.Equal(t, "item1\nitem2\nitem3\nitem4\n", string(db.Storage.Bytes()))
 }
