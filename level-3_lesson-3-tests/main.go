@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"github.com/chzyer/readline"
 	"io"
@@ -56,7 +55,7 @@ func (db *DBImpl) Close() {
 }
 
 type TodoerService interface {
-	Run()
+	Run(w io.Writer)
 }
 
 type TodoerServiceImpl struct {
@@ -73,26 +72,7 @@ func NewTodoerServiceImpl(db DB, settings *readline.Config) (*TodoerServiceImpl,
 	return &TodoerServiceImpl{db, lineRdr}, nil
 }
 
-type myBuffer struct {
-	bytes.Buffer
-}
-
-func (b myBuffer) Close() error {
-	return nil
-}
-
-type myBufio struct {
-	bufio.Reader
-}
-
-func (b myBufio) Close() error {
-	return nil
-}
-func NewReader(rd io.Reader) *bufio.Reader {
-	return NewReaderSize(rd, bufio.defaultBufSize)
-}
-
-func (todoer *TodoerServiceImpl) Run() {
+func (todoer *TodoerServiceImpl) Run(w io.Writer) {
 	for {
 		str, err := todoer.lineRdr.Readline()
 		if err != nil {
@@ -113,13 +93,16 @@ func (todoer *TodoerServiceImpl) Run() {
 			}
 			item := strings.Join(tokens[1:], " ")
 			todoer.db.AddItem(item)
-			fmt.Println(todoer.db.List())
+			fmt.Fprintln(w, todoer.db.List())
+			//fmt.Println(todoer.db.List())
 
 		case "list":
-			fmt.Println(strings.Join(todoer.db.List(), "\n"))
+			fmt.Fprintln(w, strings.Join(todoer.db.List(), "\n"))
+			//fmt.Println(strings.Join(todoer.db.List(), "\n"))
 
 		default:
-			fmt.Println("unknown command")
+			fmt.Fprintln(w, "unknown command")
+			//fmt.Println("unknown command")
 		}
 	}
 }
@@ -131,20 +114,13 @@ func main() {
 	}
 	defer db.Close()
 
-	//var b myBuffer
-	var b bytes.Buffer
-	b.Write([]byte("add asd\nlist\n"))
-
 	todoer, err := NewTodoerServiceImpl(db, &readline.Config{
 		Prompt:            "> ",
 		HistoryFile:       "/tmp/todoer.tmp",
 		InterruptPrompt:   "^C",
 		EOFPrompt:         "exit",
 		HistorySearchFold: true,
-		Stdin:             bufio.NewReader(&b),
 	})
 
-	//fmt.Println(todoer)
-	todoer.Run()
-
+	todoer.Run(os.Stdout)
 }

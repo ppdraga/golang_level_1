@@ -3,7 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/chzyer/readline"
+	"github.com/stretchr/testify/assert"
+	"io"
 	"log"
+	"os"
 	"testing"
 )
 
@@ -32,9 +36,43 @@ func TestTodoer(t *testing.T) {
 	db := &DBStub{b, []string{}}
 	db.AddItem("item1")
 	db.AddItem("item2")
-	fmt.Println(db, db.List())
+	//fmt.Println(db, db.List())
 
-	//t.Error("Fail: expected duplicates, got none")
-	//t.Error("Fail: expected file name duplicate file2, got")
+	// input
+	r, w, err := os.Pipe()
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = w.Write([]byte("add item3\nadd item4\nlist\nunknown\n"))
+	if err != nil {
+		fmt.Println(err)
+	}
+	w.Close()
+
+	todoer, err := NewTodoerServiceImpl(db, &readline.Config{
+		Prompt:            "> ",
+		HistoryFile:       "/tmp/todoer.tmp",
+		InterruptPrompt:   "^C",
+		EOFPrompt:         "exit",
+		HistorySearchFold: true,
+		Stdin:             r,
+	})
+
+	// catch output
+	r1, w1, err := os.Pipe()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	todoer.Run(w1)
+	w1.Close()
+	var buf bytes.Buffer
+	io.Copy(&buf, r1)
+	output := string(buf.Bytes())
+	//fmt.Println("output")
+	//fmt.Println(output)
+	expected := "[item1 item2 item3]\n[item1 item2 item3 item4]\nitem1\nitem2\nitem3\nitem4\nunknown command\n"
+
+	assert.Equal(t, expected, output)
 
 }
