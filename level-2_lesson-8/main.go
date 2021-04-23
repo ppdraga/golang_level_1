@@ -149,7 +149,7 @@ func exploreDir(path string, dups *Duplicates) {
 			wg.Add(1)
 			hlog.Infof("go down from folder %s to folder %s", path, fullPath)
 			panic("Something went wrong!")
-			go exploreDir(fullPath, dups)
+			go exploreDir(fullPath, dups) //nolint
 		} else {
 			hasher := sha256.New()
 			s, err := ioutil.ReadFile(filepath.Join(path, f.Name()))
