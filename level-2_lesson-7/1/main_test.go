@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"testing"
 )
 
@@ -18,7 +20,11 @@ func TestBubbleSort(t *testing.T) {
 		"FieldInt":    777,
 		"unknown":     "unknoun",
 	}
-	UpdateStruct(&v, newValues)
+	err := UpdateStruct(&v, newValues)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	if !(v.FieldString == newValues["FieldString"]) {
 		t.Error("v.FieldString expected", newValues["FieldString"], "Got", v.FieldString)
 	}

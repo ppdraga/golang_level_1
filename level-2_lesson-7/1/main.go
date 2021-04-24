@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"reflect"
 )
 
@@ -20,7 +21,11 @@ func main() {
 		"FieldInt":    777,
 		"unknown":     "unknoun",
 	}
-	UpdateStruct(&v, newValues)
+	err := UpdateStruct(&v, newValues)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	fmt.Println("")
 	PrintStruct(v)
 }
